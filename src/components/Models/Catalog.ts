@@ -1,8 +1,8 @@
-import { IProduct } from "../../../types/index";
+import { IProduct } from "../../types/index";
 
 export class Catalog {
-  products: IProduct[];
-  currentProduct: IProduct | undefined;
+  protected products: IProduct[];
+  protected currentProduct: IProduct | undefined;
 
   constructor() {
     this.products = [];

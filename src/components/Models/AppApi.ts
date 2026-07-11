@@ -1,10 +1,9 @@
 import {
   IApi,
   IProductResponse,
-  IProduct,
   IOrder,
   IOrderResult,
-} from "../../../types/index";
+} from "../../types/index";
 
 export class AppApi {
   // Защищенное свойство для хранения экземпляра базового Api
@@ -16,14 +15,12 @@ export class AppApi {
   }
 
   // Метод для получения списка товаров
-  getProducts(): Promise<IProduct[]> {
-    return this._api
-      .get<IProductResponse>("/api/weblarek/product")
-      .then((data: IProductResponse) => data.items); // Извлекаем только массив items
+  getProducts(): Promise<IProductResponse> {
+    return this._api.get<IProductResponse>("/product");
   }
 
   // Метод для отправки заказа на сервер
   orderProducts(order: IOrder): Promise<IOrderResult> {
-    return this._api.post<IOrderResult>("/api/weblarek/order", order);
+    return this._api.post<IOrderResult>("/order", order);
   }
 }

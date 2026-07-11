@@ -1,7 +1,7 @@
-import { IProduct } from "../../../types/index";
+import { IProduct } from "../../types/index";
 
 export class Basket {
-  products: IProduct[];
+  protected products: IProduct[];
 
   constructor() {
     this.products = [];

@@ -1,17 +1,19 @@
 // import './scss/styles.scss';
-import { Catalog } from "./components/base/Models/Catalog";
-import { Basket } from "./components/base/Models/Basket";
-import { Buyer } from "./components/base/Models/Buyer";
+import { Catalog } from "./components/Models/Catalog";
+import { Basket } from "./components/Models/Basket";
+import { Buyer } from "./components/Models/Buyer";
+import { IProductResponse, TFormErrors } from "./types/index";
 
 import { apiProducts } from "./utils/data";
 import { Api } from "./components/base/Api";
-import { AppApi } from "./components/base/Models/AppApi";
+import { AppApi } from "./components/Models/AppApi";
+import { API_URL } from "./utils/constants";
 
 const productsModel = new Catalog();
 const basketModel = new Basket();
 const buyerModel = new Buyer();
 
-const API_URL = import.meta.env.VITE_API_ORIGIN;
+// const API_URL = import.meta.env.VITE_API_ORIGIN;
 
 const baseApi = new Api(API_URL);
 const appApi = new AppApi(baseApi);
@@ -43,10 +45,7 @@ basketModel.addProduct(apiProducts.items[0]);
 basketModel.addProduct(apiProducts.items[1]);
 
 console.log("Количество товаров в корзине:", basketModel.getTotalCount());
-console.log(
-  "Список товаров в корзине:",
-  basketModel.getProducts().map((p) => p.title),
-);
+console.log("Список товаров в корзине:", basketModel.getProducts());
 console.log(
   "Проверка наличия товара в корзине (true/false):",
   basketModel.isProductIn("b06cde61-912f-4663-9751-09956c0eed67"),
@@ -72,10 +71,8 @@ buyerModel.saveEmail("junior@dev.ru");
 buyerModel.saveAddress("Офис");
 buyerModel.savePhone("+79998887766");
 
-console.log(
-  "Ошибки заполненной анкеты (ожидается пустой объект):",
-  buyerModel.validate(),
-);
+const initialErrors: TFormErrors = buyerModel.validate();
+console.log("Ошибки пустой анкеты:", initialErrors);
 console.log(
   "Полученные данные покупателя из модели (геттер):",
   buyerModel.getBuyerData(),
@@ -89,12 +86,12 @@ console.log(
 
 appApi
   .getProducts()
-  .then((serverProducts) => {
+  .then((response: IProductResponse) => {
     console.log(
-      `Сервер успешно вернул массив данных. Количество элементов: ${serverProducts.length}`,
+      `Сервер успешно вернул массив данных. Количество элементов: ${response.total}`,
     );
 
-    productsModel.saveProducts(serverProducts);
+    productsModel.saveProducts(response.items);
     const finalStoredCatalog = productsModel.getProducts();
 
     console.log(

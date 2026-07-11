@@ -1,10 +1,10 @@
-import { TPayment, BuyerData } from "../../../types/index";
+import { TPayment, BuyerData, TFormErrors } from "../../types/index";
 
 export class Buyer {
-  payment: TPayment | null;
-  email: string;
-  phone: string;
-  address: string;
+  protected payment: TPayment | null;
+  protected email: string;
+  protected phone: string;
+  protected address: string;
 
   constructor() {
     this.payment = null;
@@ -34,11 +34,7 @@ export class Buyer {
   }
 
   // Получение всех данных покупателя
-  getBuyerData(): BuyerData | null {
-    // Если пользователь вообще ничего не заполнил, возвращаем null
-    if (!this.payment && !this.email && !this.phone && !this.address) {
-      return null;
-    }
+  getBuyerData(): BuyerData {
     return {
       payment: this.payment,
       email: this.email,
@@ -56,18 +52,8 @@ export class Buyer {
   }
 
   // Валидация (проверка на заполненность)
-  validate(): {
-    payment?: string;
-    email?: string;
-    phone?: string;
-    address?: string;
-  } {
-    const errors: {
-      payment?: string;
-      email?: string;
-      phone?: string;
-      address?: string;
-    } = {};
+  validate(): TFormErrors {
+    const errors: TFormErrors = {};
 
     if (!this.payment) {
       errors.payment = "Не выбран вид оплаты";

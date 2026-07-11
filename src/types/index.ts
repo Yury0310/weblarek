@@ -32,6 +32,8 @@ export interface IBuyer {
 // Тип данных, возвращаемый методом getBuyerData
 export type BuyerData = IBuyer;
 
+export type TFormErrors = Partial<Record<keyof IBuyer, string>>;
+
 // ответ сервера со списком товаров
 export interface IProductResponse {
   items: IProduct[]; //массив товаров
