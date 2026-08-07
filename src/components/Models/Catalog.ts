@@ -1,37 +1,40 @@
 import { IProduct } from "../../types/index";
+import { IEvents } from "../base/Events";
 
 export class Catalog {
-  protected products: IProduct[];
-  protected currentProduct: IProduct | undefined;
+  protected _products: IProduct[];
+  protected _currentProduct: IProduct | undefined;
+  protected _events: IEvents; // Брокер событий
 
-  constructor() {
-    this.products = [];
-    this.currentProduct = undefined;
+  constructor(events: IEvents) {
+    this._products = [];
+    this._currentProduct = undefined;
+    this._events = events;
   }
 
-  // Сохранение массива товаров
   saveProducts(data: IProduct[]): void {
-    this.products = data;
+    this._products = data;
+    // Генерируем событие: каталог изменился
+    this._events.emit("items:changed", { items: this._products });
   }
 
-  // Сохранение товара для подробного отображения
+  // Изменение выбранного товара для просмотра в модалке
   saveCurrentProduct(data: IProduct | undefined): void {
-    this.currentProduct = data;
+    this._currentProduct = data;
+    // Генерируем событие: выбран другой товар
+    this._events.emit("card:preview", { item: this._currentProduct });
   }
 
-  // Получение массива всех товаров
   getProducts(): IProduct[] {
-    return this.products;
+    return this._products;
   }
 
-  // Получение текущего выбранного товара
   getCurrentProduct(): IProduct | undefined {
-    return this.currentProduct;
+    return this._currentProduct;
   }
 
-  // Получение одного товара по его id
   getProductId(id: string): IProduct | null {
-    const foundProduct = this.products.find((product) => product.id === id);
+    const foundProduct = this._products.find((product) => product.id === id);
     return foundProduct || null;
   }
 }

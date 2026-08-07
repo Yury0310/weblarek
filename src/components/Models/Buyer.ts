@@ -1,70 +1,71 @@
-import { TPayment, BuyerData, TFormErrors } from "../../types/index";
+import { TPayment, IBuyer, TFormErrors } from "../../types/index";
+import { IEvents } from "../base/Events";
 
 export class Buyer {
-  protected payment: TPayment | null;
-  protected email: string;
-  protected phone: string;
-  protected address: string;
+  protected _payment: TPayment | null;
+  protected _email: string;
+  protected _phone: string;
+  protected _address: string;
+  protected _events: IEvents; // Брокер событий
 
-  constructor() {
-    this.payment = null;
-    this.email = "";
-    this.phone = "";
-    this.address = "";
+  constructor(events: IEvents) {
+    this._payment = null;
+    this._email = "";
+    this._phone = "";
+    this._address = "";
+    this._events = events;
   }
 
-  // Сохранение способа оплаты
   savePayment(payment: TPayment): void {
-    this.payment = payment;
+    this._payment = payment;
+    this._events.emit("buyer:changed", this.getBuyerData());
   }
 
-  // Сохранение email
   saveEmail(email: string): void {
-    this.email = email.trim();
+    this._email = email.trim();
+    this._events.emit("buyer:changed", this.getBuyerData());
   }
 
-  // Сохранение телефона
   savePhone(phone: string): void {
-    this.phone = phone.trim();
+    this._phone = phone.trim();
+    this._events.emit("buyer:changed", this.getBuyerData());
   }
 
-  // Сохранение адреса
   saveAddress(address: string): void {
-    this.address = address.trim();
+    this._address = address.trim();
+    this._events.emit("buyer:changed", this.getBuyerData());
   }
 
-  // Получение всех данных покупателя
-  getBuyerData(): BuyerData {
+  getBuyerData(): IBuyer {
     return {
-      payment: this.payment,
-      email: this.email,
-      phone: this.phone,
-      address: this.address,
+      payment: this._payment,
+      email: this._email,
+      phone: this._phone,
+      address: this._address,
     };
   }
 
-  // Очистка всех сохраненных данных
   clean(): void {
-    this.payment = null;
-    this.email = "";
-    this.phone = "";
-    this.address = "";
+    this._payment = null;
+    this._email = "";
+    this._phone = "";
+    this._address = "";
+    this._events.emit("buyer:changed", this.getBuyerData());
   }
 
-  // Валидация (проверка на заполненность)
   validate(): TFormErrors {
     const errors: TFormErrors = {};
 
-    if (!this.payment) {
+    if (!this._payment) {
       errors.payment = "Не выбран вид оплаты";
     }
-    if (!this.email) {
+    if (!this._email) {
       errors.email = "Укажите емэйл";
     }
-    if (!this.phone) {
+    if (!this._phone) {
       errors.phone = "Укажите номер телефона";
     }
-    if (!this.address) {
+    if (!this._address) {
       errors.address = "Укажите адрес доставки";
     }
 
