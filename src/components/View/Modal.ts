@@ -32,7 +32,7 @@ export class Modal extends Component<IModalData> {
       if (value) {
         this._content.replaceChildren(value);
       } else {
-        this._content.innerHTML = "";
+        this._content.replaceChildren();
       }
     }
   }

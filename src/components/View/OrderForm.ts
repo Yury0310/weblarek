@@ -5,6 +5,7 @@ import { IBuyer, TPayment } from "../../types";
 export class OrderForm extends Form<IBuyer> {
   protected _cardButton: HTMLButtonElement;
   protected _cashButton: HTMLButtonElement;
+  protected _addressInput: HTMLInputElement;
 
   constructor(container: HTMLFormElement, events: IEvents) {
     super(container, events);
@@ -15,6 +16,10 @@ export class OrderForm extends Form<IBuyer> {
     this._cashButton = container.querySelector(
       "button[name=cash]",
     ) as HTMLButtonElement;
+
+    this._addressInput = container.querySelector(
+      "input[name=address]",
+    ) as HTMLInputElement;
 
     this._cardButton?.addEventListener("click", () =>
       this.onPaymentChange("online"),
@@ -34,25 +39,36 @@ export class OrderForm extends Form<IBuyer> {
   }
 
   set address(value: string) {
-    const input = this.container.querySelector(
-      "input[name=address]",
-    ) as HTMLInputElement;
-    if (input) input.value = value;
+    if (this._addressInput) {
+      this._addressInput.value = value;
+    }
   }
 }
 
 export class ContactsForm extends Form<IBuyer> {
-  set email(value: string) {
-    const input = this.container.querySelector(
+  protected _emailInput: HTMLInputElement;
+  protected _phoneInput: HTMLInputElement;
+
+  constructor(container: HTMLFormElement, events: IEvents) {
+    super(container, events);
+
+    this._emailInput = container.querySelector(
       "input[name=email]",
     ) as HTMLInputElement;
-    if (input) input.value = value;
+    this._phoneInput = container.querySelector(
+      "input[name=phone]",
+    ) as HTMLInputElement;
+  }
+
+  set email(value: string) {
+    if (this._emailInput) {
+      this._emailInput.value = value;
+    }
   }
 
   set phone(value: string) {
-    const input = this.container.querySelector(
-      "input[name=phone]",
-    ) as HTMLInputElement;
-    if (input) input.value = value;
+    if (this._phoneInput) {
+      this._phoneInput.value = value;
+    }
   }
 }
