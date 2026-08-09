@@ -4,17 +4,26 @@
 .basket {
   @include mixins.flex(column);
   gap: 2rem;
-  height: 60vh;
+
+  height: auto;
+  max-height: 60vh;
 
   &__list {
     padding: 0 2rem 0 0;
     margin: 0;
     flex-grow: 1;
     overflow-y: auto;
+
+    &_empty {
+      flex-grow: 0;
+      height: auto;
+      min-height: 0px;
+      padding-bottom: 3rem;
+    }
   }
-  
+
   &__list:not(:has(> *))::before {
-    content: 'Корзина пуста';
+    content: "Корзина пуста";
     opacity: 0.3;
     display: block;
     text-align: left;
@@ -40,7 +49,7 @@
     }
 
     &-delete {
-      @include mixins.icon(2rem, 'trash');
+      @include mixins.icon(2rem, "trash");
       @include mixins.link($hover, white);
       opacity: 0.5;
       margin-left: 4rem;

@@ -17,7 +17,7 @@ export class Buyer {
 
   savePayment(payment: TPayment): void {
     this._payment = payment;
-    this._events.emit("buyer:changed", this.getBuyerData());
+    this._events.emit("buyer:changed");
   }
 
   saveEmail(email: string): void {

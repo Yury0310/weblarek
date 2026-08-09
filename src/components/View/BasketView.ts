@@ -37,19 +37,18 @@ export class BasketView extends Component<IBasketState> {
     if (items.length === 0) {
       if (this._list) {
         this._list.replaceChildren();
-        this._list.style.flexGrow = "0";
-        this._list.style.minHeight = "0px";
-        this._list.style.height = "auto";
+        this._list.classList.add("basket__list_empty");
       }
-      if (this._emptyNotification)
-        this._emptyNotification.style.display = "block";
+      if (this._emptyNotification) {
+        this._emptyNotification.classList.remove("basket__notification_hidden");
+      }
       if (this._button) this._button.disabled = true;
     } else {
-      if (this._emptyNotification)
-        this._emptyNotification.style.display = "none";
+      if (this._emptyNotification) {
+        this._emptyNotification.classList.add("basket__notification_hidden");
+      }
       if (this._list) {
-        this._list.style.flexGrow = "";
-        this._list.style.minHeight = "auto";
+        this._list.classList.remove("basket__list_empty");
         this._list.replaceChildren(...items);
       }
       if (this._button) this._button.disabled = false;

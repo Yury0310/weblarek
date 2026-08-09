@@ -18,7 +18,8 @@ import { CardBasket } from "./components/View/Card/CardBasket";
 import { BasketView } from "./components/View/BasketView";
 import { SuccessView } from "./components/View/SuccessView";
 
-import { OrderForm, ContactsForm } from "./components/View/OrderForm.ts";
+import { OrderForm } from "./components/View/OrderForm";
+import { ContactsForm } from "./components/View/ContactsForm";
 
 const events = new EventEmitter();
 
@@ -161,41 +162,55 @@ events.on("basket:changed", () => {
 // Нажатие кнопки открытия корзины
 
 events.on("basket:open", () => {
+  const basketItems = basketModel.getProducts().map((item, index) => {
+    const rowElement = cardBasketTemplate.content.cloneNode(
+      true,
+    ) as HTMLElement;
+    const cardBasket = new CardBasket(
+      rowElement.firstElementChild as HTMLElement,
+      {
+        onClick: () => basketModel.removeProduct(item),
+      },
+    );
+    cardBasket.index = index + 1;
+    return cardBasket.render(item);
+  });
+  basketView.total = basketModel.getTotalPrice();
   modal.render({
-    content: basketView.render(),
+    content: basketView.render({
+      items: basketItems,
+    }),
   });
 });
 
 let lastOrderErrorText = "";
 let lastContactsErrorText = "";
 
+// удалил querySelector и разделение по условиям!
+// обновляю состояние и ошибки сразу для обеих глобальных форм.
+
 events.on("buyer:changed", () => {
   const errors = buyerModel.validate();
   const currentData = buyerModel.getBuyerData();
 
-  const activeFormElement = modalContainer.querySelector(
-    "form",
-  ) as HTMLFormElement;
-  if (!activeFormElement) return;
+  if (currentData.payment) {
+    orderForm.payment = currentData.payment;
+  }
 
-  if (activeFormElement.name === "order") {
-    if (currentData.payment) orderForm.payment = currentData.payment;
+  let errorTextOrder = errors.payment || errors.address || "";
+  orderForm.valid = !errors.payment && !errors.address;
 
-    let errorTextOrder = errors.payment || errors.address || "";
+  if (errorTextOrder !== lastOrderErrorText) {
+    orderForm.errors = errorTextOrder;
+    lastOrderErrorText = errorTextOrder;
+  }
 
-    orderForm.valid = !errors.payment && !errors.address;
-    if (errorTextOrder !== lastOrderErrorText) {
-      orderForm.errors = errorTextOrder;
-      lastOrderErrorText = errorTextOrder;
-    }
-  } else if (activeFormElement.name === "contacts") {
-    let errorTextContacts = errors.email || errors.phone || "";
+  let errorTextContacts = errors.email || errors.phone || "";
+  contactsForm.valid = !errors.email && !errors.phone;
 
-    contactsForm.valid = !errors.email && !errors.phone;
-    if (errorTextContacts !== lastContactsErrorText) {
-      contactsForm.errors = errorTextContacts;
-      lastContactsErrorText = errorTextContacts;
-    }
+  if (errorTextContacts !== lastContactsErrorText) {
+    contactsForm.errors = errorTextContacts;
+    lastContactsErrorText = errorTextContacts;
   }
 });
 
@@ -224,22 +239,16 @@ events.on("card:remove", (data: { item: IProduct }) => {
 });
 
 //Нажатие кнопки оформления заказа (Открытие ПЕРВОЙ формы)
+//Рендерю форму абсолютно пустой, а затем даю модели команду автоматически наполнить её данными через событие buyer:changed!
 
 events.on("order:open", () => {
-  const errors = buyerModel.validate();
-  const currentData = buyerModel.getBuyerData();
-  let errorText = errors.payment || errors.address || "";
-  orderForm.address = currentData.address;
-  if (currentData.payment) {
-    orderForm.payment = currentData.payment;
-  }
-  const renderedForm = orderForm.render({
-    valid: !errors.payment && !errors.address,
-    errors: errorText ? [errorText] : [],
-  });
+  // Принудительно обнуляем состояние постоянного инстанса формы перед показом
+  orderForm.address = "";
+  orderForm.payment = null; // Передаем null, чтобы форма сама погасила кнопки оплаты!
   modal.render({
-    content: renderedForm,
+    content: orderForm.render(),
   });
+  events.emit("buyer:changed");
 });
 
 // Изменение данных в формах и обработка выбора оплаты
@@ -259,30 +268,15 @@ events.on("contacts:input", (data: { field: keyof IBuyer; value: string }) => {
 
 events.on("payment:change", (data: { payment: TPayment }) => {
   buyerModel.savePayment(data.payment);
-  const activeFormElement = modalContainer.querySelector(
-    "form",
-  ) as HTMLFormElement;
-  if (activeFormElement && activeFormElement.name === "order") {
-    const currentOrderForm = new OrderForm(activeFormElement, events);
-    currentOrderForm.payment = data.payment;
-  }
 });
 
 events.on("order:submit", () => {
-  const currentData = buyerModel.getBuyerData();
-  const errors = buyerModel.validate();
-
-  let errorText = errors.email || errors.phone || "";
-
-  contactsForm.email = currentData.email;
-  contactsForm.phone = currentData.phone;
-
+  contactsForm.email = "";
+  contactsForm.phone = "";
   modal.render({
-    content: contactsForm.render({
-      valid: !errors.email && !errors.phone,
-      errors: errorText ? [errorText] : [],
-    }),
+    content: contactsForm.render(),
   });
+  events.emit("buyer:changed");
 });
 
 // Нажатие кнопки оплаты/завершения оформления заказа (кнопка "Оплатить")
@@ -304,6 +298,10 @@ events.on("contacts:submit", () => {
     .then((result) => {
       basketModel.clean();
       buyerModel.clean();
+      orderForm.address = "";
+      orderForm.payment = null;
+      contactsForm.email = "";
+      contactsForm.phone = "";
       modal.render({
         content: successView.render({
           total: result.total,
